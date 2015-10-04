@@ -25,7 +25,7 @@ if(!$auth->isAuthentic()){
     header("HTTP/1.1 401 Unauthorized");
 }else{
     if($action == "get"){
-		echo $actor->Get();
+	echo $actor->Get();
     }else if($action == "insert"){
         echo $actor->Insert($model);
     }else if($action == "update"){
