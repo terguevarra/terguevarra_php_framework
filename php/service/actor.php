@@ -2,6 +2,9 @@
 
 include('../config/mysql_db.php');
 
+$db = new MySQL();
+$conn = $db->Connect();
+
 $query = "SELECT * FROM actor";
 
 $result = $conn->query($query);
