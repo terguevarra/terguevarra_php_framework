@@ -26,7 +26,7 @@ if(!$auth->isAuthentic()){
 }else{
     if($action == "get"){
 		echo $actor->Get();
-	}else if($action == "insert"){
+    }else if($action == "insert"){
         echo $actor->Insert($model);
     }else if($action == "update"){
         echo $actor->Update($model);
