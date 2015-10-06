@@ -67,10 +67,30 @@ class Authentication{
 		$signature2 = hash_hmac('sha256', $encodedstring, 'teraya1128');
 
 		if($signature2 == $signature){
-			return true;
+			$payloadObject = $this->ToObject($payload);
+            if($this->CheckExpiration($payloadObject->exp)){
+                return true; //token is valid
+            }else{
+                return false; //token is expired
+            }
 		}else{
-			return false;
+			return false; //invalid token
 		}
+    }
+    
+    /*parse part of the token to object*/
+    private function ToObject($load){
+        return (object)json_decode(base64_decode($load));
+    }
+    
+    /*check if token is expired*/
+    private function CheckExpiration($date){
+        $today = time();
+        if($today > $date){
+            return false;
+        }else{
+            return true;
+        }
     }
     
 }
