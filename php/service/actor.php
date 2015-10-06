@@ -4,11 +4,16 @@ require('../config/mysql_db.php');
 
 class Actor{
     
+    private $db;
+    
+    public function __construct(){
+        $this->db = new MySQL();
+    }
+    
     public function Get(){
-        $db = new MySQL();
-        $conn = $db->Connect();
+        $conn = $this->db->Connect();
         
-        $query = "SELECT * FROM actor";
+        $query = "SELECT actor_id, first_name, last_name FROM actor WHERE is_deleted = 0 ORDER BY last_update DESC";
 
         $result = $conn->query($query);
 
@@ -22,21 +27,74 @@ class Actor{
                     "lastname"=>$fetchdata->last_name
                 );
             }
-
+            $conn->close();
             return json_encode($returndata);
         }
     }
     
     public function Insert($model){
-    
+        $conn = $this->db->Connect();
+        
+        $query = "INSERT INTO actor (first_name, last_name) VALUES (?, ?)";
+        
+        if($stmt = $conn->prepare($query)){
+            $stmt->bind_param("ss", $model->firstname, $model->lastname);
+            $stmt->execute();
+            
+            $conn->commit();
+            
+            $stmt->close();
+            
+            $conn->close();
+            return "Success";
+        }else{
+            $conn->close();
+            return $conn->error;
+        }
     }
     
     public function Update($model){
-    
+        $conn = $this->db->Connect();
+        
+        $query = "UPDATE actor SET first_name=?, last_name=? WHERE actor_id=?";
+        
+        if($stmt = $conn->prepare($query)){
+            $stmt->bind_param("ssi", $model->firstname, $model->lastname, $model->id);
+            
+            $stmt->execute();
+            
+            $conn->commit();
+            
+            $stmt->close();
+            
+            $conn->close();
+            return "Success";
+        }else{
+            $conn->close();
+            return $conn->error;
+        }
     }
     
     public function Delete($model){
-    
+        $conn = $this->db->Connect();
+        
+        $query = "UPDATE actor SET is_deleted=1 WHERE actor_id=?";
+        
+        if($stmt = $conn->prepare($query)){
+            $stmt->bind_param("i", $model->id);
+            
+            $stmt->execute();
+            
+            $conn->commit();
+            
+            $stmt->close();
+            
+            $conn->close();
+            return "Success";
+        }else{
+            $conn->close();
+            return $conn->error;
+        }
     }
 }
 
