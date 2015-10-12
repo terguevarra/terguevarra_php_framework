@@ -33,68 +33,82 @@ class Actor{
     }
     
     public function Insert($model){
-        $conn = $this->db->Connect();
+        if(property_exists($model, 'firstname') && property_exists($model, 'lastname')){
+            $conn = $this->db->Connect();
         
-        $query = "INSERT INTO actor (first_name, last_name) VALUES (?, ?)";
-        
-        if($stmt = $conn->prepare($query)){
-            $stmt->bind_param("ss", $model->firstname, $model->lastname);
-            $stmt->execute();
-            
-            $conn->commit();
-            
-            $stmt->close();
-            
-            $conn->close();
-            return "Success";
+            $query = "INSERT INTO actor (first_name, last_name) VALUES (?, ?)";
+
+            if($stmt = $conn->prepare($query)){
+                $stmt->bind_param("ss", $model->firstname, $model->lastname);
+                $stmt->execute();
+
+                $conn->commit();
+
+                $stmt->close();
+
+                $conn->close();
+                return "Success";
+            }else{
+                $conn->close();
+                return $conn->error;
+            }
         }else{
-            $conn->close();
-            return $conn->error;
+            return "Invalid Parameters";
         }
+        
     }
     
     public function Update($model){
-        $conn = $this->db->Connect();
+        if(property_exists($model, 'firstname') && property_exists($model, 'lastname') && property_exists($model, 'id')){
+            $conn = $this->db->Connect();
         
-        $query = "UPDATE actor SET first_name=?, last_name=? WHERE actor_id=?";
-        
-        if($stmt = $conn->prepare($query)){
-            $stmt->bind_param("ssi", $model->firstname, $model->lastname, $model->id);
-            
-            $stmt->execute();
-            
-            $conn->commit();
-            
-            $stmt->close();
-            
-            $conn->close();
-            return "Success";
+            $query = "UPDATE actor SET first_name=?, last_name=? WHERE actor_id=?";
+
+            if($stmt = $conn->prepare($query)){
+                $stmt->bind_param("ssi", $model->firstname, $model->lastname, $model->id);
+
+                $stmt->execute();
+
+                $conn->commit();
+
+                $stmt->close();
+
+                $conn->close();
+                return "Success";
+            }else{
+                $conn->close();
+                return $conn->error;
+            }
         }else{
-            $conn->close();
-            return $conn->error;
+            return "Invalid Parameters";
         }
     }
     
     public function Delete($model){
-        $conn = $this->db->Connect();
+        if(property_exists($model, 'id')){
+            $conn = $this->db->Connect();
         
-        $query = "UPDATE actor SET is_deleted=1 WHERE actor_id=?";
-        
-        if($stmt = $conn->prepare($query)){
-            $stmt->bind_param("i", $model->id);
-            
-            $stmt->execute();
-            
-            $conn->commit();
-            
-            $stmt->close();
-            
-            $conn->close();
-            return "Success";
+            $query = "UPDATE actor SET is_deleted=1 WHERE actor_id=?";
+
+            if($stmt = $conn->prepare($query)){
+                $stmt->bind_param("i", $model->id);
+
+                $stmt->execute();
+
+                $conn->commit();
+
+                $stmt->close();
+
+                $conn->close();
+                return "Success";
+            }else{
+                $conn->close();
+                return $conn->error;
+            }
         }else{
-            $conn->close();
-            return $conn->error;
+            return "Invalid Parameters";
         }
+        
     }
 }
 
