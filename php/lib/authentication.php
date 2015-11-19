@@ -2,16 +2,22 @@
 class Authentication{
     
     private $is_authentic;
+    private $key = 'tergie10052015';
     
     /*check if token is authentic
     returns true or false*/
     public function isAuthentic(){
-        return $this->is_authentic = $this->VerifyToken($this->GetToken());
+        $token = $this->GetToken();
+        
+        if(!$token){
+            return false; //no token
+        }else{
+            return $this->is_authentic = $this->VerifyToken($token);
+        }
     }
     
     /*generate token for login*/
     public function GenerateToken($username){
-        $key = "tergie10052015";
 
 		$today = time();
 
@@ -36,7 +42,7 @@ class Authentication{
 
 		$encodedstring = $header . $payload;
 
-		$signature = hash_hmac('sha256', $encodedstring, $key);
+		$signature = hash_hmac('sha256', $encodedstring, $this->key);
 
 		$token = $header . "." . $payload . "." . $signature;
 
@@ -51,7 +57,12 @@ class Authentication{
                 $token = $value;
             }
         }
-        return $token;
+        if(isset($token)){
+            return $token;
+        }else{
+            return false;
+        }
+        
     }
     
     /*verify token*/
@@ -64,7 +75,7 @@ class Authentication{
 
 		$encodedstring = $header . $payload;
 
-		$signature2 = hash_hmac('sha256', $encodedstring, 'teraya1128');
+		$signature2 = hash_hmac('sha256', $encodedstring, $this->key);
 
 		if($signature2 == $signature){
 			$payloadObject = $this->ToObject($payload);

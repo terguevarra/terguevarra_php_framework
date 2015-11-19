@@ -1,6 +1,6 @@
 <?php
 require('../lib/authentication.php');
-require('../service/user.php');
+require('../service/account.php');
 
 if(isset($_POST['action'])){
     $action = $_POST['action'];
@@ -17,10 +17,12 @@ if(isset($_POST['action'])){
 }
 
 //instatiate actor class
-$user = new User();
+$account = new Account();
 
 if($action == "register"){
-    echo $user->Register($model);
+    echo $account->Register($model);
+}elseif($action == "login"){
+    echo $account->Login($model);
 }else{
     header("HTTP/1.1 403 Forbidden");
 }

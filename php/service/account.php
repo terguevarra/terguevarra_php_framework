@@ -3,7 +3,7 @@
 require('../config/mysql_db.php');
 require('../lib/security.php');
 
-class User{
+class Account{
     
     private $db;
     
@@ -11,8 +11,35 @@ class User{
         $this->db = new MySQL();
     }
     
-    public function Login(){
-        
+    public function Login($model){
+        if(property_exists($model, 'username') && property_exists($model, 'password')){
+            $conn = $this->db->Connect();
+            $auth = new Authentication();
+            
+            $query = "SELECT username, password, salt FROM users WHERE username = ? AND is_deleted = 0";
+            
+            if($stmt = $conn->prepare($query)){
+                $stmt->bind_param("s", $model->username);
+                $stmt->execute();
+                $stmt->store_result();
+               
+                if($stmt->num_rows == 1){
+                    $stmt->bind_result($username, $hashedpassword, $salt);
+                    $stmt->fetch();
+                    
+                    if($this->VerifyPassword($model->password, $hashedpassword, $salt)){
+                        return $auth->GenerateToken($username);
+                    }else{
+                        return "Invalid Password";
+                    }
+                }else{
+                    return "Invalid Username";
+                }
+                
+            }
+        }else{
+            return "Invalid Parameters";
+        }
     }
     
     public function Register($model){
@@ -70,6 +97,17 @@ class User{
             }else{
                 return false;
             }
+        }
+    }
+    
+    private function VerifyPassword($password, $hashedpassword, $salt){
+        $security = new Security();
+        $hashedpassword2 = $security->HashPassword($password, $salt);
+        
+        if($hashedpassword == $hashedpassword2){
+            return true;
+        }else{
+            return false;
         }
     }
 }
