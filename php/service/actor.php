@@ -13,7 +13,7 @@ class Actor{
     public function Get(){
         $conn = $this->db->Connect();
         
-        $query = "SELECT actor_id, first_name, last_name FROM actor WHERE is_deleted = 0 ORDER BY last_update DESC";
+        $query = "SELECT actor_id, first_name, last_name FROM actor ORDER BY last_update DESC";
 
         $result = $conn->query($query);
 
@@ -88,7 +88,7 @@ class Actor{
         if(property_exists($model, 'id')){
             $conn = $this->db->Connect();
         
-            $query = "UPDATE actor SET is_deleted=1 WHERE actor_id=?";
+            $query = "DELETE FROM actor WHERE actor_id=?";
 
             if($stmt = $conn->prepare($query)){
                 $stmt->bind_param("i", $model->id);

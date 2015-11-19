@@ -11,7 +11,7 @@ class Authentication{
     
     /*generate token for login*/
     public function GenerateToken($username){
-        $key = "teraya1128";
+        $key = "tergie10052015";
 
 		$today = time();
 
