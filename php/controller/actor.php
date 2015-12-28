@@ -23,8 +23,7 @@ $auth = new Authentication();
 $actor = new Actor();
 
 if(!$auth->isAuthentic()){
-    //header("HTTP/1.1 401 Unauthorized");
-    echo $auth->isAuthentic();
+    header("HTTP/1.1 401 Unauthorized");
 }else{
     if($action == "get"){
 	    echo $actor->Get();

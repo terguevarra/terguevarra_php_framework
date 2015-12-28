@@ -16,27 +16,31 @@ class Account{
             $conn = $this->db->Connect();
             $auth = new Authentication();
             
-            $query = "SELECT username, password, salt FROM users WHERE username = ? AND is_deleted = 0";
+            $query = "SELECT username, password, salt FROM users WHERE username = :username AND is_deleted = 0";
             
-            if($stmt = $conn->prepare($query)){
-                $stmt->bind_param("s", $model->username);
-                $stmt->execute();
-                $stmt->store_result();
-               
-                if($stmt->num_rows == 1){
-                    $stmt->bind_result($username, $hashedpassword, $salt);
-                    $stmt->fetch();
-                    
-                    if($this->VerifyPassword($model->password, $hashedpassword, $salt)){
-                        return $auth->GenerateToken($username);
+            try{
+                $stmt = $conn->prepare($query);
+                $params = array(
+                    ":username"=>$model->username
+                );
+                $stmt->execute($params);
+
+                if($stmt->rowCount() == 1){
+                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $result = (object)$result[0];
+
+                    if($this->VerifyPassword($model->password, $result->password, $result->salt)){
+                        return $auth->GenerateToken($result->username);
                     }else{
                         return "Invalid Password";
                     }
                 }else{
                     return "Invalid Username";
                 }
-                
+            }catch(PDOException $e){
+                return "General Error";
             }
+            
         }else{
             return "Invalid Parameters";
         }
@@ -54,19 +58,23 @@ class Account{
                 //generate hashedpassword
                 $hashedpassword = $security->HashPassword($model->password, $salt);
 
-                $query = "INSERT INTO users (username, password, salt, is_deleted) VALUES (?,?,?,0)";
+                $query = "INSERT INTO users (username, password, salt, is_deleted) VALUES (:username, :password, :salt, 0)";
+                
+                try{
+                    $stmt = $conn->prepare($query);
+                    $params = array(
+                        ":username"=>$model->username,
+                        ":password"=>$hashedpassword,
+                        ":salt"=>$salt
+                    );
 
-                if($stmt = $conn->prepare($query)){
-                    $stmt->bind_param("sss", $model->username, $hashedpassword, $salt);
-                    $stmt->execute();
-                    $conn->commit();
-                    $stmt->close();
-                    $conn->close();
+                    $stmt->execute($params);
                     return "Success";
-                }else{
-                    $conn->close();
-                    return $conn->error;
+                }catch(PDOException $e){
+                    return "General Error";
                 }
+                
+                
             }else{
                return "Username Taken"; 
             }     
@@ -86,17 +94,22 @@ class Account{
     private function CheckDuplicate($username){
         $conn = $this->db->Connect();
         
-        $query = "SELECT username FROM users WHERE username = ? AND is_deleted = 0";
+        $query = "SELECT username FROM users WHERE username = :username AND is_deleted = 0";
         
-        if($stmt = $conn->prepare($query)){
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $stmt->store_result();
-            if($stmt->num_rows >= 1){
+        try{
+            $stmt = $conn->prepare($query);
+            $params = array(
+                ":username"=>$username
+            );
+            $stmt->execute($params);
+            
+            if($stmt->rowCount() >= 1){
                 return true;
             }else{
                 return false;
             }
+        }catch(PDOException $e){
+            return false;
         }
     }
     

@@ -14,21 +14,24 @@ class Actor{
         $conn = $this->db->Connect();
         
         $query = "SELECT actor_id, first_name, last_name FROM actor ORDER BY last_update DESC";
-
-        $result = $conn->query($query);
-
-        if($result->num_rows > 0){
-            while($row = $result->fetch_assoc()){
+        
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        if(sizeof($result) > 0){
+            foreach($result as $row){
                 $fetchdata = (object)$row;
-
+                
                 $returndata[] = array(
                     "id"=>$fetchdata->actor_id,
                     "firstname"=>$fetchdata->first_name,
                     "lastname"=>$fetchdata->last_name
                 );
             }
-            $conn->close();
             return json_encode($returndata);
+        }else{
+            return "null";
         }
     }
     
@@ -36,21 +39,19 @@ class Actor{
         if(property_exists($model, 'firstname') && property_exists($model, 'lastname')){
             $conn = $this->db->Connect();
         
-            $query = "INSERT INTO actor (first_name, last_name) VALUES (?, ?)";
-
-            if($stmt = $conn->prepare($query)){
-                $stmt->bind_param("ss", $model->firstname, $model->lastname);
-                $stmt->execute();
-
-                $conn->commit();
-
-                $stmt->close();
-
-                $conn->close();
+            $query = "INSERT INTO actor (first_name, last_name) VALUES (:firstname, :lastname)";
+            
+            try{
+                $stmt = $conn->prepare($query);
+                $params = array(
+                    ":firstname"=>$model->firstname,
+                    ":lastname"=>$model->lastname
+                );
+                
+                $stmt->execute($params);
                 return "Success";
-            }else{
-                $conn->close();
-                return $conn->error;
+            }catch(PDOExceptio $e){
+                return $e->getMessage();
             }
         }else{
             return "Invalid Parameters";
@@ -62,22 +63,20 @@ class Actor{
         if(property_exists($model, 'firstname') && property_exists($model, 'lastname') && property_exists($model, 'id')){
             $conn = $this->db->Connect();
         
-            $query = "UPDATE actor SET first_name=?, last_name=? WHERE actor_id=?";
-
-            if($stmt = $conn->prepare($query)){
-                $stmt->bind_param("ssi", $model->firstname, $model->lastname, $model->id);
-
-                $stmt->execute();
-
-                $conn->commit();
-
-                $stmt->close();
-
-                $conn->close();
+            $query = "UPDATE actor SET first_name=:firstname, last_name=:lastname WHERE actor_id=:id";
+            
+            try{
+                $stmt = $conn->prepare($query);
+                $params = array(
+                    ":firstname"=>$model->firstname,
+                    ":lastname"=>$model->lastname,
+                    ":id"=>$model->id
+                );
+                
+                $stmt->execute($params);
                 return "Success";
-            }else{
-                $conn->close();
-                return $conn->error;
+            }catch(PDOExceptio $e){
+                return $e->getMessage();
             }
         }else{
             return "Invalid Parameters";
@@ -88,22 +87,18 @@ class Actor{
         if(property_exists($model, 'id')){
             $conn = $this->db->Connect();
         
-            $query = "DELETE FROM actor WHERE actor_id=?";
+            $query = "DELETE FROM actor WHERE actor_id=:id";
 
-            if($stmt = $conn->prepare($query)){
-                $stmt->bind_param("i", $model->id);
-
-                $stmt->execute();
-
-                $conn->commit();
-
-                $stmt->close();
-
-                $conn->close();
+            try{
+                $stmt = $conn->prepare($query);
+                $params = array(
+                    ":id"=>$model->id
+                );
+                
+                $stmt->execute($params);
                 return "Success";
-            }else{
-                $conn->close();
-                return $conn->error;
+            }catch(PDOExceptio $e){
+                return $e->getMessage();
             }
         }else{
             return "Invalid Parameters";
