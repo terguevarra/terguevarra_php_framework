@@ -50,7 +50,7 @@ class Actor{
                 
                 $stmt->execute($params);
                 return "Success";
-            }catch(PDOExceptio $e){
+            }catch(PDOException $e){
                 return $e->getMessage();
             }
         }else{
@@ -75,7 +75,7 @@ class Actor{
                 
                 $stmt->execute($params);
                 return "Success";
-            }catch(PDOExceptio $e){
+            }catch(PDOException $e){
                 return $e->getMessage();
             }
         }else{
@@ -97,7 +97,7 @@ class Actor{
                 
                 $stmt->execute($params);
                 return "Success";
-            }catch(PDOExceptio $e){
+            }catch(PDOException $e){
                 return $e->getMessage();
             }
         }else{
