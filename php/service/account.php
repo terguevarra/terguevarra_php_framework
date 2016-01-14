@@ -83,12 +83,110 @@ class Account{
         }
     }
     
-    public function ChangePassword(){
+    public function ChangePassword($model){
+        if(property_exists($model, 'id') && property_exists($model, 'password')){
+            $conn = $this->db->Connect();
+            
+            $security = new Security();
+            
+            //generate salt
+            $salt = $security->GenerateSalt();
+            
+            //generate hashedpassword
+            $hashedpassword = $security->HashPassword($model->password, $salt);
+            
+            $query = "UPDATE users SET password = :password, salt = :salt WHERE id = :id";
+            
+            try{
+                $stmt = $conn->prepare($query);
+                $params = array(
+                    ":password"=>$hashedpassword,
+                    ":salt"=>$salt,
+                    ":id"=>$model->id
+                );
+                $stmt->execute($params);
+                $response = "Success";
+            }catch(PDOException $e){
+                $response = "General Error";
+            }
+            
+        }else{
+            $response = "Invalid Parameters";
+        }
         
+        return $response;
     }
     
-    public function ChangeUsername(){
-        
+     public function Delete($model){
+        if(property_exists($model, 'id')){
+            $conn = $this->db->Connect();
+            
+            $query = "UPDATE users SET is_deleted = 1 WHERE id = :id";
+            
+            try{
+                $stmt = $conn->prepare($query);
+                $params = array(
+                    ":id"=>$model->id
+                );
+                $stmt->execute($params);
+                $response = "Success";
+            }catch(PDOException $e){
+                $response = "General Error";
+            }
+            
+        }else{
+            $response = "Invalid Parameters";
+        }
+        return $response;
+    }
+    
+    public function RestoreUser($model){
+        if(property_exists($model, 'id')){
+            $conn = $this->db->Connect();
+            
+            $query = "UPDATE users SET is_deleted = 0 WHERE id = :id";
+            
+            try{
+                $stmt = $conn->prepare($query);
+                $params = array(
+                    ":id"=>$model->id
+                );
+                $stmt->execute($params);
+                $response = "Success";
+            }catch(PDOException $e){
+                $response = "General Error";
+            }
+        }else{
+            $response = "Invalid Parameters";
+        }
+        return $response;
+    }
+    
+    
+    public function ChangeUsername($model){
+        if(property_exists($model, 'id') && property_exists($model, 'username')){
+            $conn = $this->db->Connect();
+            if(!$this->CheckDuplicate($model->username)){
+                $query = "UPDATE users SET username = :username WHERE id = :id";
+                try{
+                    $stmt = $conn->prepare($query);
+                    $params = array(
+                        ":id"=>$model->id,
+                        ":username"=>$model->username
+                    );
+                    $stmt->execute($params);
+                    $response = "Success";
+                }catch(PDOException $e){
+                    $response = "General Error";
+                }
+            }else{
+                $response = "Username Taken"; 
+            }
+            
+        }else{
+            $response = "Invalid Parameters";
+        }
+        return $response;
     }
     
     private function CheckDuplicate($username){
